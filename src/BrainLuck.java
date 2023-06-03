@@ -1,5 +1,5 @@
 public class BrainLuck {
-    private final byte[] memory = new byte[255];
+    private final byte[] memory = new byte[5000];
     private final Character[] commandTape;
     private int dataPointer = 0;
 
@@ -14,7 +14,6 @@ public class BrainLuck {
         StringBuilder output = new StringBuilder();
 
         var commandTapeCursor = 0;
-        var innerLoopCounter = 0;
         while (commandTapeCursor < commandTape.length) {
 
             var c = commandTape[commandTapeCursor];
@@ -36,46 +35,34 @@ public class BrainLuck {
                     commandTapeCursor++;
                 }
                 case '[' -> {
+                    commandTapeCursor++;
                     if (memory[dataPointer] == 0) {
-                        for (int i = commandTapeCursor + 1; i < commandTape.length; i++) {
-                            if (commandTape[i] == ']') {
-                                if (innerLoopCounter == 0) {
-                                    break;
-                                } else {
-                                    innerLoopCounter--;
-                                }
-                                commandTapeCursor++;
-                            } else if (commandTape[i] == '[') {
-                                innerLoopCounter++;
-                                commandTapeCursor++;
-                            } else {
-                                commandTapeCursor++;
+                        int depth = 1;
+                        while (depth > 0) {
+                            char closingCommand = commandTape[commandTapeCursor++];
+                            if (closingCommand == '[') {
+                                depth++;
+                            }
+                            if (closingCommand == ']') {
+                                depth--;
                             }
                         }
-                    } else {
-                        commandTapeCursor++;
                     }
                 }
                 case ']' -> {
                     if (memory[dataPointer] != 0) {
-                        for (int i = commandTapeCursor - 1; i > 0; i--) {
-                            if (commandTape[i] == '[') {
-                                if (innerLoopCounter == 0) {
-                                    break;
-                                } else {
-                                    innerLoopCounter--;
-                                }
-                                commandTapeCursor--;
-                            } else if (commandTape[i] == ']') {
-                                innerLoopCounter++;
-                                commandTapeCursor--;
-                            } else {
-                                commandTapeCursor--;
+                        int depth = 1;
+                        while (depth > 0) {
+                            char closingCommand = commandTape[--commandTapeCursor];
+                            if (closingCommand == ']') {
+                                depth++;
+                            }
+                            if (closingCommand == '[') {
+                                depth--;
                             }
                         }
-                    } else {
-                        commandTapeCursor++;
                     }
+                    commandTapeCursor++;
                 }
                 case '.' -> {
                     output.append((char) memory[dataPointer]);
